@@ -2,6 +2,7 @@ package games.game2048
 
 import board.Cell
 import board.Direction
+import board.Direction.*
 import board.GameBoard
 import board.createGameBoard
 import games.game.Game
@@ -42,7 +43,10 @@ class Game2048(private val initializer: Game2048Initializer<Int>) : Game {
  * Add a new value produced by 'initializer' to a specified cell in a board.
  */
 fun GameBoard<Int?>.addNewValue(initializer: Game2048Initializer<Int>) {
-    TODO()
+    initializer.nextValue(this)?.run {
+        set(first, second)
+    }
+
 }
 
 /*
@@ -52,7 +56,18 @@ fun GameBoard<Int?>.addNewValue(initializer: Game2048Initializer<Int>) {
  * Return 'true' if the values were moved and 'false' otherwise.
  */
 fun GameBoard<Int?>.moveValuesInRowOrColumn(rowOrColumn: List<Cell>): Boolean {
-    TODO()
+    val initialValues = rowOrColumn.map { get(it) }
+    val afterMoving = initialValues.moveAndMergeEqual { a -> a * 2 }
+    if (initialValues != afterMoving) {
+        for ((cell, newValue) in rowOrColumn.zip(afterMoving)) {
+            set(cell, newValue)
+        }
+        for (i in afterMoving.size until rowOrColumn.size) {
+            set(rowOrColumn[i], null)
+        }
+    }
+
+    return initialValues.isNotEmpty() && initialValues != afterMoving
 }
 
 /*
@@ -61,5 +76,25 @@ fun GameBoard<Int?>.moveValuesInRowOrColumn(rowOrColumn: List<Cell>): Boolean {
  * Return 'true' if the values were moved and 'false' otherwise.
  */
 fun GameBoard<Int?>.moveValues(direction: Direction): Boolean {
-    TODO()
+    fun allRows(reversed: Boolean = false): List<List<Cell>> {
+        val range = if (reversed) 4 downTo 1 else 1..4
+        return (1..4).map { getRow(it, range) }
+    }
+
+    fun allColumns(reversedRows: Boolean = false): List<List<Cell>> {
+        val range = if (reversedRows) 4 downTo 1 else 1..4
+        return (1..4).map { getColumn(range, it) }
+    }
+
+    fun cellsForMovement(): List<List<Cell>> = when (direction) {
+        UP -> allColumns()
+        DOWN -> allColumns(true)
+        LEFT -> allRows()
+        RIGHT -> allRows(true)
+    }
+
+    return cellsForMovement().fold(false) { acc, cellGroup ->
+        moveValuesInRowOrColumn(cellGroup) || acc
+    }
+
 }

@@ -1,5 +1,6 @@
 package games.gameOfFifteen
 
+import board.Cell
 import board.Direction
 import board.GameBoard
 import board.createGameBoard
@@ -11,5 +12,79 @@ import games.game.Game
  * (or choosing the corresponding run configuration).
  */
 fun newGameOfFifteen(initializer: GameOfFifteenInitializer = RandomGameInitializer()): Game =
-    TODO()
+        GameOfFifteen(initializer)
 
+class GameOfFifteen(private val initializer: GameOfFifteenInitializer) : Game {
+
+    companion object {
+
+        val winningValues = (1..15).toList()
+
+    }
+
+    private val board = createGameBoard<Int?>(4)
+
+    private var emptyCell = board.getCell(4, 4)
+
+    override fun initialize() {
+        with(board) {
+            getAllCells().zip(initializer.initialPermutation).forEach {
+                this[it.first] = it.second
+            }
+            emptyCell = board.getCell(4, 4)
+            set(emptyCell, null)
+        }
+    }
+
+    override fun canMove() = true
+
+    override fun hasWon(): Boolean {
+        return emptyCell.i == 4 && emptyCell.j == 4
+                && board.getAllValues() == winningValues
+    }
+
+    override fun processMove(direction: Direction) {
+        val directionToMove = direction.reversed()
+
+        with(board) {
+            val candidateToSwap = emptyCell.getNeighbour(directionToMove)
+            if (candidateToSwap != null) {
+                swapValues(emptyCell, candidateToSwap)
+                emptyCell = candidateToSwap
+            }
+        }
+    }
+
+    override fun get(i: Int, j: Int): Int? = board.run { get(getCell(i, j)) }
+}
+
+/**
+ * List all non null values in the board.
+ *
+ * @return values for each initialized [board.Cell] that isn't null
+ */
+fun GameBoard<Int?>.getAllValues() = getAllCells().mapNotNull { get(it) }
+
+/**
+ * Swap the values of two cells if there is enough space.
+ *
+ * For the swap to succeed one of the values should be `null` and the other should not be `null`.
+ *
+ * @param cell1 the first cell
+ * @param cell2 the second cell
+ *
+ * return `true` if one, and exactly one, of the two cell values is `null`.
+ */
+fun GameBoard<Int?>.swapValues(cell1: Cell, cell2: Cell): Boolean {
+    val cell1Value = get(cell1)
+    val cell2Value = get(cell2)
+
+    if ((cell1Value == null).xor(cell2Value == null)) {
+        set(cell1, cell2Value)
+        set(cell2, cell1Value)
+
+        return true
+    }
+
+    return false
+}

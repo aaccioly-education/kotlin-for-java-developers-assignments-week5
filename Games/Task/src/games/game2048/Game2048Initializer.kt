@@ -8,7 +8,7 @@ interface Game2048Initializer<T> {
     fun nextValue(board: GameBoard<T?>): Pair<Cell, T>?
 }
 
-object RandomGame2048Initializer: Game2048Initializer<Int> {
+object RandomGame2048Initializer : Game2048Initializer<Int> {
     private val random = Random()
     private fun generateRandomStartValue(): Int =
             if (random.nextInt(10) == 9) 4 else 2
@@ -21,6 +21,14 @@ object RandomGame2048Initializer: Game2048Initializer<Int> {
      * If the board is full return null.
      */
     override fun nextValue(board: GameBoard<Int?>): Pair<Cell, Int>? {
-        TODO()
+        val cell = board.filter { it == null }
+                .shuffled()
+                .firstOrNull()
+
+        return if (cell == null) {
+            null
+        } else {
+            Pair(cell, generateRandomStartValue())
+        }
     }
 }

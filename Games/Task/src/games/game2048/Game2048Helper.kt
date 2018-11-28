@@ -13,6 +13,30 @@ package games.game2048
  *   a, a, null, a -> aa, a
  *   a, null, a, a -> aa, a
 */
-fun <T : Any> List<T?>.moveAndMergeEqual(double: (T) -> T): List<T> =
-        TODO()
+fun <T : Any> List<T?>.moveAndMergeEqual(double: (T) -> T): List<T> {
+    val clean = this.filterNotNull()
+    val merged = mutableListOf<T>()
+
+    var last = clean.firstOrNull()
+
+    for (i in 1 until clean.size) {
+        val current = clean[i]
+        if (current == last) {
+            merged += double(current)
+            last = null
+        } else {
+            if (last != null) {
+                merged += last
+            }
+            last = current
+        }
+    }
+
+    if (last != null) {
+        merged += last
+    }
+
+    return merged
+}
+
 

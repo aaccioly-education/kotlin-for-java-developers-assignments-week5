@@ -1,6 +1,5 @@
 package games.gameOfFifteen
 
-import java.util.*
 
 interface GameOfFifteenInitializer {
     /*
@@ -13,7 +12,8 @@ interface GameOfFifteenInitializer {
 
 class RandomGameInitializer : GameOfFifteenInitializer {
     override val initialPermutation by lazy {
-        TODO()
+        generateSequence { (1..15).shuffled().toList() }.first { candidateValues ->
+            isEven(candidateValues) && candidateValues != GameOfFifteen.winningValues }
     }
 }
 
