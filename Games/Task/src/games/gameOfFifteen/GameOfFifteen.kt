@@ -24,14 +24,14 @@ class GameOfFifteen(private val initializer: GameOfFifteenInitializer) : Game {
 
     private val board = createGameBoard<Int?>(4)
 
-    private var emptyCell = board.getCell(4, 4)
+    private var emptyCell = board.getCell(board.width, board.width)
 
     override fun initialize() {
         with(board) {
             getAllCells().zip(initializer.initialPermutation).forEach {
                 this[it.first] = it.second
             }
-            emptyCell = board.getCell(4, 4)
+            emptyCell = board.getCell(board.width, board.width)
             set(emptyCell, null)
         }
     }
@@ -39,7 +39,7 @@ class GameOfFifteen(private val initializer: GameOfFifteenInitializer) : Game {
     override fun canMove() = true
 
     override fun hasWon(): Boolean {
-        return emptyCell.i == 4 && emptyCell.j == 4
+        return emptyCell.i == board.width && emptyCell.j == board.width
                 && board.getAllValues() == winningValues
     }
 
